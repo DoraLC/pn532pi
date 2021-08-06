@@ -7,6 +7,7 @@
 """
 import time
 import binascii
+import RPi.GPIO as GPIO
 
 from pn532pi import Pn532, pn532
 from pn532pi import Pn532I2c
@@ -54,25 +55,36 @@ def setup():
     print("Waiting for an ISO14443A card")
 
 
-def loop():
+def readingUID():
     # Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
     # 'uid' will be populated with the UID, and uidLength will indicate
     # if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
     success, uid = nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS)
 
     if (success):
+        uid_hex = ""
+        uidLen = "{:d}".format(len(uid))
         print("Found a card!")
-        print("UID Length: {:d}".format(len(uid)))
+        print("UID Length: ", uidLen)
         print("UID Value: {}".format(binascii.hexlify(uid)))
-        print("UID in dec:", int(binascii.hexlify(uid), 16))
-        # Wait 1 second before continuing
-        time.sleep(1)
-        return True
+        for i in reversed(uid[:len(uid)-1]):
+            uid_hex += "{:x}".format(i)
+        uid_dec = int(uid_hex, 16)
+        
+        return uidLen, uid_hex, uid_dec
     else:
-        return False
+        return None, None, None
 
 
 if __name__ == '__main__':
-    setup()
-    while True:
-        cardpolling = loop()
+    try:
+        setup()
+        while True:
+            cardID = readingUID()
+            if cardID[0] != None:
+                print("UID: ", cardID[2])
+                time.sleep(1)
+    except Exception as e:
+        print(e)
+    finally:
+        GPIO.cleanup()

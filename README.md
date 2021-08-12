@@ -32,7 +32,7 @@ This is a port of [Seeed Studios's PN532 Arduino Library](https://github.com/See
 
     1. Get pn532 library
         ```
-          git clone --recursive https://github.com/gassajor000/pn532pi.git
+          git clone --recursive https://github.com/DoraLC/pn532pi.git
         ```
     
     2. Follow the examples of the two libraries
